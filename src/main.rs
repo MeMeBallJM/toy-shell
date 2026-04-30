@@ -1,5 +1,6 @@
 use std::io::Write;
 use std::io::{self, Stdin};
+use std::process;
 
 fn display_prompt() {
     print!("$ ");
@@ -17,7 +18,10 @@ fn read_command(stdin: &Stdin) -> String {
 }
 
 fn handle_command(command: &String) {
-    println!("{}: command not found", command);
+    match command.as_str() {
+        "exit" => process::exit(0),
+        _ => println!("{}: command not found", command),
+    }
 }
 
 fn main() {
