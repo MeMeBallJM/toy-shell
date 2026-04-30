@@ -15,5 +15,5 @@ fn main() {
 
     let input = &buffer[0..buffer.len() - 1];
 
-    println!("{}: {} not found", input, input);
+    println!("{}: command not found", input);
 }
