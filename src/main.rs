@@ -1,19 +1,31 @@
-use std::io;
 use std::io::Write;
+use std::io::{self, Stdin};
 
-fn main() {
+fn display_prompt() {
     print!("$ ");
     io::stdout().flush().expect("Unable to flush prompt");
+}
 
-    let mut buffer = String::new();
-    let stdin = io::stdin();
+fn read_command(stdin: &Stdin) -> String {
+    let mut command = String::new();
 
-    if let Err(error) = stdin.read_line(&mut buffer) {
-        println!("Unable to read line from stdin: {}", error);
-        return;
+    if let Err(error) = stdin.read_line(&mut command) {
+        println!("Unable to read command {}", error);
     }
 
-    let input = &buffer[0..buffer.len() - 1];
+    command.trim_end().to_owned()
+}
 
-    println!("{}: command not found", input);
+fn handle_command(command: &String) {
+    println!("{}: command not found", command);
+}
+
+fn main() {
+    let stdin = io::stdin();
+
+    loop {
+        display_prompt();
+        let command = read_command(&stdin);
+        handle_command(&command);
+    }
 }
