@@ -41,7 +41,11 @@ fn handle_command(cmd_name: Option<&str>, args: Vec<&str>) {
         return;
     }
 
-    println!("{} {}: command not found", cmd_name, args.join(" "));
+    if args.is_empty() {
+        println!("{}: command not found", cmd_name);
+    } else {
+        println!("{} {}: command not found", cmd_name, args.join(" "));
+    }
 }
 
 fn main() {
