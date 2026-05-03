@@ -14,14 +14,34 @@ fn read_command(stdin: &Stdin) -> String {
         println!("Unable to read command {}", error);
     }
 
-    command.trim_end().to_owned()
+    return command.trim_end().to_string();
 }
 
-fn handle_command(command: &String) {
-    match command.as_str() {
-        "exit" => process::exit(0),
-        _ => println!("{}: command not found", command),
+fn parse_command(command: &String) -> (Option<&str>, Vec<&str>) {
+    let mut split = command.split_whitespace();
+
+    if let Some(cmd_name) = split.next() {
+        return (Some(cmd_name), split.collect());
+    } else {
+        return (None, vec![]);
     }
+}
+
+fn handle_command(cmd_name: Option<&str>, args: Vec<&str>) {
+    let Some(cmd_name) = cmd_name else {
+        return;
+    };
+
+    if cmd_name == "exit" {
+        process::exit(0)
+    }
+
+    if cmd_name == "echo" {
+        println!("{}", args.join(" "));
+        return;
+    }
+
+    println!("{} {}: command not found", cmd_name, args.join(" "));
 }
 
 fn main() {
@@ -30,6 +50,7 @@ fn main() {
     loop {
         display_prompt();
         let command = read_command(&stdin);
-        handle_command(&command);
+        let (cmd_name, args) = parse_command(&command);
+        handle_command(cmd_name, args);
     }
 }
