@@ -41,6 +41,23 @@ fn handle_command(cmd_name: Option<&str>, args: Vec<&str>) {
         return;
     }
 
+    if cmd_name == "type" {
+        if args.len() == 0 {
+            return;
+        }
+
+        for cmd in ["exit", "echo", "type"] {
+            if args[0] == cmd {
+                println!("{} is a shell builtin", cmd);
+                return;
+            }
+        }
+
+        println!("{}: not found", args[0]);
+
+        return;
+    }
+
     if args.is_empty() {
         println!("{}: command not found", cmd_name);
     } else {
