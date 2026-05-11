@@ -14,9 +14,9 @@ fn echo(args: &[&str], _shell: &Shell) {
 
 fn r#type(args: &[&str], shell: &Shell) {
     'args: for &arg in &args[1..] {
-        for bulltin in shell.get_bulltins() {
+        for bulltin in shell.get_builtins() {
             if bulltin == arg {
-                println!("{arg} is a shell bulltin");
+                println!("{arg} is a shell builtin");
                 continue 'args;
             }
         }
@@ -45,9 +45,9 @@ fn r#type(args: &[&str], shell: &Shell) {
 
 fn main() {
     let mut shell = Shell::new();
-    shell.add_bulltin("exit", exit);
-    shell.add_bulltin("echo", echo);
-    shell.add_bulltin("type", r#type);
+    shell.add_builtin("exit", exit);
+    shell.add_builtin("echo", echo);
+    shell.add_builtin("type", r#type);
 
     shell.start();
 }

@@ -1,29 +1,29 @@
 use core::panic;
 use std::collections::HashMap;
 use std::io::Write;
-use std::io::{self, Stdin, Stdout};
+use std::io::{self, Stdin};
 
-type Bulltin = fn(&[&str], &Shell);
+type Builtin = fn(&[&str], &Shell);
 
 pub struct Shell {
-    bulltin_cmds: HashMap<String, Bulltin>,
+    builtin_cmds: HashMap<String, Builtin>,
     input: Stdin,
 }
 
 impl Shell {
     pub fn new() -> Self {
         Self {
-            bulltin_cmds: HashMap::new(),
+            builtin_cmds: HashMap::new(),
             input: io::stdin(),
         }
     }
 
-    pub fn add_bulltin(&mut self, cmd_name: &str, func: Bulltin) {
-        self.bulltin_cmds.insert(cmd_name.to_string(), func);
+    pub fn add_builtin(&mut self, cmd_name: &str, func: Builtin) {
+        self.builtin_cmds.insert(cmd_name.to_string(), func);
     }
 
-    pub fn get_bulltins(&self) -> Vec<&str> {
-        self.bulltin_cmds.keys().map(|s| s.as_str()).collect()
+    pub fn get_builtins(&self) -> Vec<&str> {
+        self.builtin_cmds.keys().map(|s| s.as_str()).collect()
     }
 
     fn new_prompt(&self) -> Result<(), io::Error> {
@@ -45,7 +45,7 @@ impl Shell {
             return;
         }
 
-        if let Some(bulltin_cmd) = self.bulltin_cmds.get(args[0]) {
+        if let Some(bulltin_cmd) = self.builtin_cmds.get(args[0]) {
             bulltin_cmd(&args, &self);
             return;
         }
