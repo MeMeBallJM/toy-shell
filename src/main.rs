@@ -1,77 +1,53 @@
-use std::io::Write;
-use std::io::{self, Stdin};
-use std::process;
+mod shell;
+use std::fs;
+use std::os::unix::fs::PermissionsExt;
 
-fn display_prompt() {
-    print!("$ ");
-    io::stdout().flush().expect("Unable to flush prompt");
+use shell::Shell;
+
+fn exit(_: &[&str], _shell: &Shell) {
+    std::process::exit(0);
 }
 
-fn read_command(stdin: &Stdin) -> String {
-    let mut command = String::new();
-
-    if let Err(error) = stdin.read_line(&mut command) {
-        println!("Unable to read command {}", error);
-    }
-
-    return command.trim_end().to_string();
+fn echo(args: &[&str], _shell: &Shell) {
+    print!("{}\n", args[1..].join(" "));
 }
 
-fn parse_command(command: &String) -> (Option<&str>, Vec<&str>) {
-    let mut split = command.split_whitespace();
-
-    if let Some(cmd_name) = split.next() {
-        return (Some(cmd_name), split.collect());
-    } else {
-        return (None, vec![]);
-    }
-}
-
-fn handle_command(cmd_name: Option<&str>, args: Vec<&str>) {
-    let Some(cmd_name) = cmd_name else {
-        return;
-    };
-
-    if cmd_name == "exit" {
-        process::exit(0)
-    }
-
-    if cmd_name == "echo" {
-        println!("{}", args.join(" "));
-        return;
-    }
-
-    if cmd_name == "type" {
-        if args.len() == 0 {
-            return;
-        }
-
-        for cmd in ["exit", "echo", "type"] {
-            if args[0] == cmd {
-                println!("{} is a shell builtin", cmd);
-                return;
+fn r#type(args: &[&str], shell: &Shell) {
+    'args: for &arg in &args[1..] {
+        for bulltin in shell.get_bulltins() {
+            if bulltin == arg {
+                println!("{arg} is a shell bulltin");
+                continue 'args;
             }
         }
 
-        println!("{}: not found", args[0]);
+        let path = std::env::var("PATH").unwrap_or(String::new());
 
-        return;
-    }
+        for dir in path.split(":") {
+            let path = format!("{dir}/{arg}");
+            let Ok(metadata) = fs::metadata(path.as_str()) else {
+                continue;
+            };
 
-    if args.is_empty() {
-        println!("{}: command not found", cmd_name);
-    } else {
-        println!("{} {}: command not found", cmd_name, args.join(" "));
+            let permissions = metadata.permissions();
+            let mode = permissions.mode();
+
+            // Bitflag check if executable
+            if mode & 0o100 != 0 {
+                println!("{path}");
+                continue 'args;
+            }
+        }
+
+        println!("{arg} not found");
     }
 }
 
 fn main() {
-    let stdin = io::stdin();
+    let mut shell = Shell::new();
+    shell.add_bulltin("exit", exit);
+    shell.add_bulltin("echo", echo);
+    shell.add_bulltin("type", r#type);
 
-    loop {
-        display_prompt();
-        let command = read_command(&stdin);
-        let (cmd_name, args) = parse_command(&command);
-        handle_command(cmd_name, args);
-    }
+    shell.start();
 }
