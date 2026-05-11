@@ -28,11 +28,17 @@ fn r#type(args: &[&str], shell: &Shell) {
     }
 }
 
+fn pwd(_args: &[&str], _shell: &Shell) {
+    let path = std::env::current_dir().expect("Can't pwd");
+    println!("{}", path.display());
+}
+
 fn main() {
     let mut shell = Shell::new();
     shell.add_builtin("exit", exit);
     shell.add_builtin("echo", echo);
     shell.add_builtin("type", r#type);
+    shell.add_builtin("pwd", pwd);
 
     shell.start();
 }
