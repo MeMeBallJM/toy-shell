@@ -4,6 +4,7 @@ use std::fs;
 use std::io::Write;
 use std::io::{self, Stdin};
 use std::os::unix::fs::PermissionsExt;
+use std::os::unix::process::CommandExt;
 
 type Builtin = fn(&[&str], &Shell);
 
@@ -76,6 +77,7 @@ impl Shell {
         if let Some(program_path) = Shell::search_path(args[0]) {
             let mut child = std::process::Command::new(program_path)
                 .args(&args[1..])
+                .arg0(args[0])
                 .spawn()
                 .expect("Couldn't spawn program");
             child.wait().expect("program failed to start");

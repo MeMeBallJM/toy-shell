@@ -1,7 +1,4 @@
 mod shell;
-use std::fs;
-use std::os::unix::fs::PermissionsExt;
-
 use shell::Shell;
 
 fn exit(_: &[&str], _shell: &Shell) {
