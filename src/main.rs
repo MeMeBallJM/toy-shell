@@ -21,25 +21,13 @@ fn r#type(args: &[&str], shell: &Shell) {
             }
         }
 
-        let path = std::env::var("PATH").unwrap_or(String::new());
+        let path = Shell::search_path(arg);
 
-        for dir in path.split(":") {
-            let path = format!("{dir}/{arg}");
-            let Ok(metadata) = fs::metadata(path.as_str()) else {
-                continue;
-            };
-
-            let permissions = metadata.permissions();
-            let mode = permissions.mode();
-
-            // Bitflag check if executable
-            if mode & 0o100 != 0 {
-                println!("{path}");
-                continue 'args;
-            }
+        if let Some(path) = path {
+            println!("{arg} is {path}");
+        } else {
+            println!("{arg} not found");
         }
-
-        println!("{arg} not found");
     }
 }
 

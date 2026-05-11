@@ -1,7 +1,9 @@
 use core::panic;
 use std::collections::HashMap;
+use std::fs;
 use std::io::Write;
 use std::io::{self, Stdin};
+use std::os::unix::fs::PermissionsExt;
 
 type Builtin = fn(&[&str], &Shell);
 
@@ -24,6 +26,27 @@ impl Shell {
 
     pub fn get_builtins(&self) -> Vec<&str> {
         self.builtin_cmds.keys().map(|s| s.as_str()).collect()
+    }
+
+    pub fn search_path(name: &str) -> Option<String> {
+        let path = std::env::var("PATH").unwrap_or(String::new());
+
+        for dir in path.split(":") {
+            let path = format!("{dir}/{name}");
+            let Ok(metadata) = fs::metadata(path.as_str()) else {
+                continue;
+            };
+
+            let permissions = metadata.permissions();
+            let mode = permissions.mode();
+
+            // Bitflag check if executable
+            if mode & 0o100 != 0 {
+                return Some(path);
+            }
+        }
+
+        return None;
     }
 
     fn new_prompt(&self) -> Result<(), io::Error> {
@@ -50,7 +73,15 @@ impl Shell {
             return;
         }
 
-        // TODO: Add program execution
+        if let Some(program_path) = Shell::search_path(args[0]) {
+            let mut child = std::process::Command::new(program_path)
+                .args(&args[1..])
+                .spawn()
+                .expect("Couldn't spawn program");
+            child.wait().expect("program failed to start");
+
+            return;
+        }
 
         print!("{}: command not found\n", args[0]);
     }
