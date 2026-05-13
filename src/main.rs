@@ -1,4 +1,6 @@
 mod shell;
+use std::{env::set_current_dir, io};
+
 use shell::Shell;
 
 fn exit(_: &[&str], _shell: &Shell) {
@@ -33,12 +35,28 @@ fn pwd(_args: &[&str], _shell: &Shell) {
     println!("{}", path.display());
 }
 
+fn cd(args: &[&str], _shell: &Shell) {
+    if let Some(path) = args.get(1) {
+        let exits = match std::fs::exists(path) {
+            Ok(true) => true,
+            _ => false,
+        };
+
+        if exits {
+            _ = std::env::set_current_dir(path);
+        } else {
+            println!("cd: {path}: No such file or directory");
+        }
+    }
+}
+
 fn main() {
     let mut shell = Shell::new();
     shell.add_builtin("exit", exit);
     shell.add_builtin("echo", echo);
     shell.add_builtin("type", r#type);
     shell.add_builtin("pwd", pwd);
+    shell.add_builtin("cd", cd);
 
     shell.start();
 }
