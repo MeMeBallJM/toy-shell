@@ -37,6 +37,13 @@ fn pwd(_args: &[&str], _shell: &Shell) {
 
 fn cd(args: &[&str], _shell: &Shell) {
     if let Some(path) = args.get(1) {
+        if *path == "~" {
+            if let Ok(home) = std::env::var("HOME") {
+                _ = std::env::set_current_dir(home);
+                return;
+            }
+        }
+
         let exits = match std::fs::exists(path) {
             Ok(true) => true,
             _ => false,
